@@ -55,13 +55,18 @@ fi
 if [ "$ENABLE_CREATE_IMG_FILE" -eq 1 ]; then
 	dd if=/dev/zero of=$IMAGE_NAME bs=1024 count=$IMAGE_SIZE
 	mkfs.vfat $IMAGE_NAME
-	if grep -qs "$PROJECT_DIR$MNT_DIR" /proc/mounts; 
-	then sudo umount "$PROJECT_DIR$MNT_DIR"; fi
-	sudo mount "$IMAGE_NAME" "$PROJECT_DIR$MNT_DIR"
-	sudo cp -rf $PROJECT_DIR$OUT_DIR/* "$PROJECT_DIR$MNT_DIR/"
-	sudo umount "$PROJECT_DIR$MNT_DIR"
-	rm -rf "$PROJECT_DIR$MNT_DIR"
+	#need install mtools
+	mcopy -s -i $IMAGE_NAME $PROJECT_DIR$OUT_DIR/* ::/
+	
+	#if grep -qs "$PROJECT_DIR$MNT_DIR" /proc/mounts; 
+	#then sudo umount "$PROJECT_DIR$MNT_DIR"; fi
+	#sudo mount "$IMAGE_NAME" "$PROJECT_DIR$MNT_DIR"
+	#sudo cp -rf $PROJECT_DIR$OUT_DIR/* "$PROJECT_DIR$MNT_DIR/"
+	#sudo umount "$PROJECT_DIR$MNT_DIR"
+	#rm -rf "$PROJECT_DIR$MNT_DIR"
 fi
+
+# nasm -E ./src/BOOTX64.asm -o preprocessed.asm
 
 
 #sudo apt install genisoimage
@@ -74,6 +79,7 @@ fi
 # qemu-system-x86_64 -drive if=pflash,format=raw,readonly=on,file=/usr/share/ovmf/OVMF.fd -hda OS.img -enable-kvm -m 512 -serial stdio -vga std -global bosch-display.vgamemmb=32
 # qemu-system-x86_64 -drive if=pflash,format=raw,readonly=on,file=/usr/share/ovmf/OVMF.fd -hda OS.img -enable-kvm -m 512 -serial stdio
 # qemu-system-x86_64 -drive if=pflash,format=raw,readonly=on,file=/usr/share/ovmf/OVMF.fd -hda OS.img -enable-kvm -m 512
+# qemu-system-x86_64 -drive if=pflash,format=raw,readonly=on,file=/usr/share/ovmf/OVMF.fd -drive file=OS.img,format=raw -m 512 -nographic
 # nc localhost 2222
 # gdb
 # target remote localhost:1111

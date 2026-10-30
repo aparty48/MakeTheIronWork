@@ -1,5 +1,9 @@
 Macros_Print: 
   %include "src/lib/Macros/Print.asm"
+Macros_If:
+  %include "src/lib/Macros/If.asm"
+Macros_While:
+  %include "src/lib/Macros/While.asm"
 ;------------------------------------------------------------
 ; Main
 Start:
@@ -259,6 +263,29 @@ Code:
     mov cl, [VMM_Singed_Offset]
     shl rax, cl
     sar rax, cl                                            ; make canonical virtual address
+    
+    if rax, ==, rbx
+      mov rbx, rax
+      if rbx, >=, rcx
+        inc rax
+      endif
+    else
+      mov rax, rbx
+      ifu rcx, <, rdx
+        inc rdx
+      else
+        inc rdx
+        dec rax
+        dec rax
+        dec rax
+        while rax, >, 0
+          if rax, ==, rax
+            dec rbx
+            dec rbx
+          endif
+        endwhile
+      endel
+    endel
     
     jmp $
     hlt
