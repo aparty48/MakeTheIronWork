@@ -1,9 +1,11 @@
 ; DAE code ----------------------------------------------------------------
 DAE_Print:
+  ;Input
   ;rax - pointer to massage
-  
+  ;Used:
   ;rbx - counter
   ; 0x00 in massage, is end of text
+  
   DAE_Print_Loop:
     xor r8, r8
     mov r8b, [rax]
@@ -85,7 +87,7 @@ DAE_Print:
     
   DAE_Print_End:
     ret
-  
+;------------------------------------------------------------------------------------
 DAE_Convert_DQ_To_HEX_Text:
   ;rax - bytes to convert
   push rax
@@ -158,10 +160,12 @@ DAE_Convert_DQ_To_HEX_Text:
   DAE_Convert_DQ_To_HEX_Text_End:
     pop rax
     ret
-    
+;----------------------------------------------------------------------------------
 DAE_Convert_Byte_To_HEX_Text:
-  ;al - byte inp
-  ;ax - text out
+  ;Input
+  ;al - byte
+  ;Output
+  ;ax - text
   xor rbx, rbx
   
   mov bl, al
@@ -190,7 +194,7 @@ DAE_Convert_Byte_To_HEX_Text:
     
   DAE_Convert_Byte_To_HEX_Text_End:
     ret
-
+;-----------------------------------------------------------------------------
 DAE_PrintHi:
   mov ebx, 0xffffffff
   call DAE_FillDisplay
@@ -207,8 +211,11 @@ DAE_PrintHi:
   call DAE_DrawChar
   
   ret
-    
+;----------------------------------------------------------------------------
 DAE_FillDisplay:
+  ;Input:
+  ;ebx - color  0xAARRGGBB
+  
   mov rcx, [DAE_FrameBuffer]
   mov rax, [DAE_FrameBufferSize]
   DAE_FillDisplayLoop:
@@ -219,9 +226,10 @@ DAE_FillDisplay:
     mov [rcx+rax], ebx
     jnz DAE_FillDisplayLoop
   ret
-  
+;--------------------------------------------------------------------------  
 DAE_DrawChar:
-  ;r8 регистр это index на символ который надо отрисовать
+  ;Input:
+  ;r8 char
   ;r9 counter
   ;r10 coordiates x
   ;r11 coordinaes y
@@ -291,23 +299,4 @@ DAE_DrawChar:
     
     pop r8
     ret
-     
-; DAE Data ---------------------------------------------
-DAE_X                 dq 30           ;X coordinate symbols
-DAE_Y                 dq 30           ;Y coordinate symbols
-DAE_Color             dd 0           ;Color Symbols
-DAE_FrameBuffer       dq 0           ;Pointer BF
-DAE_FrameBufferSize   dq 0           ;Size BF
-DAE_HEX_Text          dq 0, 0        ;Text, 64 bit in format HEX, after converting
-                      db 0
-DAE_Hello_World       db "Hello World!", 0
-
-DAE_Chars:
-  %include "CharsTable.asm"
-
-DAE_Symbol_Height             equ 7
-DAE_Symbol_Width              equ 5
-DAE_Display_Symbols_Heigth    equ 91
-DAE_Display_Symbols_Width     equ 160
-DAE_Display_Heigth            equ 640
-DAE_Display_Width             equ 800
+;--------------------------------------------------------------------
