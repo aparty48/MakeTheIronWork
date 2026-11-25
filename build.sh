@@ -15,7 +15,6 @@ source $CONFIG_FILE
 
 # Check folders
 if [ ! -d "$PROJECT_DIR$TMP_DIR" ]; then mkdir -p "$PROJECT_DIR$TMP_DIR"; fi
-if [ ! -d "$PROJECT_DIR$MNT_DIR" ]; then mkdir -p "$PROJECT_DIR$MNT_DIR"; fi
 if [ ! -d "$PROJECT_DIR$OUT_DIR/EFI/BOOT" ]; then mkdir -p "$PROJECT_DIR$OUT_DIR/EFI/BOOT"; fi
 
 # Build BOOTX64.EFI
@@ -32,36 +31,15 @@ if [ "$BOOTX64_EFI_BUILD_MODE" -eq 0 ]; then
 	fi
 fi
 
-# Build DEBUG BOOTX64.EFI
-if [ "$BOOTX64_EFI_BUILD_MODE" -eq 1 ]; then
-	echo "Build: Debug BOOTX64.ELF ..."
-	"$NASM_BIN" -f elf64 $BOOTX64_DBG_FLAGS "$PROJECT_DIR$BOOTX64_DBG_ELF_SRC_FILE" -o "$PROJECT_DIR$BOOTX64_DBG_O_TMP_FILE"
-	EXIT_CODE=$?
-	if [ "$EXIT_CODE" -eq 0 ]; then 
-		"$LD_BIN" -T "$PROJECT_DIR$BOOTX64_DBG_LD_SCRIPT" -o "$PROJECT_DIR$BOOTX64_DBG_ELF_TMP_FILE"
-		EXIT_CODE=$?
-		if [ "$EXIT_CODE" -eq 0 ]; then
-			"$OBJCOPY_BIN" -j .text -j data --target=efi-app-x86-64 "$PROJECT_DIR$BOOTX64_DBG_ELF_TMP_FILE" -O "$PROJECT_DIR$BOOTX64_EFI_OUT_FILE"
-			EXIT_CODE=$?
-			if [ "$EXIT_CODE" -eq 0 ]; then
-				echo "Success" 
-			fi
-		fi
-		
-	fi
-fi
-
 # Create .img file
 if [ "$ENABLE_CREATE_IMG_FILE" -eq 1 ]; then
 	dd if=/dev/zero of=$IMAGE_NAME bs=1024 count=$IMAGE_SIZE
 	mkfs.vfat $IMAGE_NAME
-	if grep -qs "$PROJECT_DIR$MNT_DIR" /proc/mounts; 
-	then sudo umount "$PROJECT_DIR$MNT_DIR"; fi
-	sudo mount "$IMAGE_NAME" "$PROJECT_DIR$MNT_DIR"
-	sudo cp -rf $PROJECT_DIR$OUT_DIR/* "$PROJECT_DIR$MNT_DIR/"
-	sudo umount "$PROJECT_DIR$MNT_DIR"
-	rm -rf "$PROJECT_DIR$MNT_DIR"
+	#need install mtools
+	mcopy -s -i $IMAGE_NAME $PROJECT_DIR$OUT_DIR/* ::/
 fi
+
+# nasm -E ./src/BOOTX64.asm -o preprocessed.asm
 
 
 #sudo apt install genisoimage
@@ -74,6 +52,7 @@ fi
 # qemu-system-x86_64 -drive if=pflash,format=raw,readonly=on,file=/usr/share/ovmf/OVMF.fd -hda OS.img -enable-kvm -m 512 -serial stdio -vga std -global bosch-display.vgamemmb=32
 # qemu-system-x86_64 -drive if=pflash,format=raw,readonly=on,file=/usr/share/ovmf/OVMF.fd -hda OS.img -enable-kvm -m 512 -serial stdio
 # qemu-system-x86_64 -drive if=pflash,format=raw,readonly=on,file=/usr/share/ovmf/OVMF.fd -hda OS.img -enable-kvm -m 512
+# qemu-system-x86_64 -drive if=pflash,format=raw,readonly=on,file=/usr/share/edk2/x64/OVMF.4m.fd -drive file=OS.img,format=raw -m 512 -nographic
 # nc localhost 2222
 # gdb
-# target remote localhost:1111
+# target remote localhost:1111 
